@@ -4,6 +4,31 @@
   
     
     <entry>
+      <title>spring基础知识</title>
+      <link href="/2022/11/23/spring/"/>
+      <url>/2022/11/23/spring/</url>
+      
+        <content type="html"><![CDATA[<p><strong>学习目标</strong></p><blockquote><ul><li>掌握Spring核心概念</li><li>完成IOC&#x2F;DI的入门案例编写</li><li>掌握IOC的相关配置与使用</li><li>掌握DI的相关配置与使用</li></ul></blockquote><h1 id="一、spring的核心概念"><a href="#一、spring的核心概念" class="headerlink" title="一、spring的核心概念"></a>一、spring的核心概念</h1><p>spring中的核心概念主要包括<code>IOC/DI</code>，<code>IOC容器</code>和<code>Bean</code>。</p><h2 id="1-IOC-控制反转"><a href="#1-IOC-控制反转" class="headerlink" title="1.IOC(控制反转)"></a>1.IOC(控制反转)</h2><p>1.什么是控制反转？</p><p>使用对象时由自己手动创建变为由外部为我们提供对象，创建对象的控制权交给了外部，这一思想就叫控制反转。</p><p>2.spring和IOC之间是什么关系呢？<br>spring对Ioc思想进行了实现，spring提供了一个容器，叫做<code>IOC容器</code>来充当外部。</p><p>3.IOC容器的作用以及存放的是什么？</p><p>IOC容器负责对象的创建以及初始化，被创建以及被管理的对象在IOC容器里面就叫做Bean。IOC里面存放的都是Bean。</p><p>4.当Service和dao创建好后程序可以正常执行吗？</p><p>不行，因为<code>service</code>运行需<code>dao</code>对象，虽然IOC由service和dao对象，但是service和dao没有任何关系，也就是需要配置service和dao的依赖关系。</p><h2 id="2-DI-依赖注入"><a href="#2-DI-依赖注入" class="headerlink" title="2.DI(依赖注入)"></a>2.DI(依赖注入)</h2><p>1.什么是依赖注入?</p><p>IOC容器里的Bean与Bean配置依赖关系的过程就是依赖注入。service层需要用到dao层对象，以前是自己<code>new</code>对象，而现在由IOC帮我们注入进来，这就叫依赖注入。</p><p>2.哪些bean之间需要进行依赖注入?</p><p>需要根据实际业务需求来判断。比如service要调用dao，那么service和dao就需要进行依赖注入。</p><h2 id="3-核心概念总结"><a href="#3-核心概念总结" class="headerlink" title="3.核心概念总结"></a>3.核心概念总结</h2><p>1.IOC与DI思想？<br>IOC(控制反转):对象的创建权交给了外部<br>DI(依赖注入):绑定bena与bean的依赖</p><p>2.IOC容器：spring提供的负责创建和管理对象的容器</p><p>3.bean：存放在IOC容器里的对象</p><h1 id="二、IOC的入门案例"><a href="#二、IOC的入门案例" class="headerlink" title="二、IOC的入门案例"></a>二、IOC的入门案例</h1><h2 id="1-思路分析"><a href="#1-思路分析" class="headerlink" title="1.思路分析"></a>1.思路分析</h2><p>1.spring容器是管理bean的，需要管理什么？</p><p>service和dao</p><p>2.如何将被管理的bean告知IOC容器？</p><p>使用配置文件</p><p>3.如何获取IOC容器？</p><p>spring提供相应的接口</p><p>4.获取到IOC容器后，怎么拿到里面的bean？</p><p>调用接口对应的方法</p><p>5.使用sprin导入那些坐标？</p><p>在<code>pom.xml</code>文件中添加依赖</p><h2 id="2-代码实现"><a href="#2-代码实现" class="headerlink" title="2.代码实现"></a>2.代码实现</h2><p>需求分析：将BookServiceImpl和BookDaoImpl交给spring管理，在IOC容器中获取对象进行方法调用。</p><h3 id="步骤一：创建maven项目"><a href="#步骤一：创建maven项目" class="headerlink" title="步骤一：创建maven项目"></a>步骤一：创建maven项目</h3><p><img src="/assets/1.png" alt="1"></p><h3 id="步骤二：在pom-xml文件中添加依赖jar包"><a href="#步骤二：在pom-xml文件中添加依赖jar包" class="headerlink" title="步骤二：在pom.xml文件中添加依赖jar包"></a>步骤二：在<code>pom.xml</code>文件中添加依赖jar包</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependencies</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>junit<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">version</span>&gt;</span>4.11<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">scope</span>&gt;</span>test<span class="tag">&lt;/<span class="name">scope</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br><span class="line"></span><br><span class="line">   <span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-context<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">     <span class="tag">&lt;<span class="name">version</span>&gt;</span>5.2.10.RELEASE<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure><h3 id="步骤三：创建相关的类"><a href="#步骤三：创建相关的类" class="headerlink" title="步骤三：创建相关的类"></a>步骤三：创建相关的类</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">BookDao</span>()&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">save</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BookService</span> <span class="keyword">implements</span> <span class="title class_">BookDao</span>()&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">save</span><span class="params">()</span>&#123;</span><br><span class="line">      System.out.println(<span class="string">&quot;book dao save...&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">BookService</span> &#123;</span><br><span class="line">    <span class="keyword">void</span> <span class="title function_">save</span><span class="params">()</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BookServiceimpl</span> <span class="keyword">implements</span> <span class="title class_">BookService</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="type">BookDao</span> <span class="variable">bookDao</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BookDao</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">save</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;book service save...&quot;</span>);</span><br><span class="line">        bookDao.save();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h3 id="步骤四：添加spring配置文件"><a href="#步骤四：添加spring配置文件" class="headerlink" title="步骤四：添加spring配置文件"></a>步骤四：添加spring配置文件</h3><p>resources下添加spring配置文件applicationContext.xml，并完成bean的配置.</p><h3 id="步骤五：在spring配置文件里配置对象的依赖"><a href="#步骤五：在spring配置文件里配置对象的依赖" class="headerlink" title="步骤五：在spring配置文件里配置对象的依赖"></a>步骤五：在spring配置文件里配置对象的依赖</h3><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;UTF-8&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">&quot;http://www.springframework.org/schema/beans&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xmlns:xsi</span>=<span class="string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span></span><br><span class="line"><span class="tag">       <span class="attr">xsi:schemaLocation</span>=<span class="string">&quot;http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;BookDao&quot;</span> <span class="attr">class</span>=<span class="string">&quot;comithema.dao.ipml.BookDaoipml&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">&quot;BookService&quot;</span> <span class="attr">class</span>=<span class="string">&quot;comithema.service.ipml.BookServiceimpl&quot;</span>/&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure><h3 id="步骤六：获取IOC容器"><a href="#步骤六：获取IOC容器" class="headerlink" title="步骤六：获取IOC容器"></a>步骤六：获取IOC容器</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">App</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">ApplicationContext</span> <span class="variable">ctx</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ClassPathXmlApplicationContext</span>(<span class="string">&quot;applicationContext.xml&quot;</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h3 id="步骤七：从容器中获取对象进行方法调用"><a href="#步骤七：从容器中获取对象进行方法调用" class="headerlink" title="步骤七：从容器中获取对象进行方法调用"></a>步骤七：从容器中获取对象进行方法调用</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">App2</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ApplicationContext</span> <span class="variable">ctx</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ClassPathXmlApplicationContext</span>(<span class="string">&quot;applicationContext.xml&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="type">BookService</span> <span class="variable">bookService</span> <span class="operator">=</span> (BookService) ctx.getBean(<span class="string">&quot;BookService&quot;</span>);</span><br><span class="line"></span><br><span class="line">        bookService.save();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><h3 id="步骤八：运行程序"><a href="#步骤八：运行程序" class="headerlink" title="步骤八：运行程序"></a>步骤八：运行程序</h3><p>测试结果为：</p><p><img src="/assets/2.png" alt="2"></p><p>##三、IOC的配置与使用</p><p>##四、DI的相关配置与使用</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> Java </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Java </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>我的第一篇博客</title>
       <link href="/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/"/>
       <url>/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87%E5%8D%9A%E5%AE%A2/</url>
@@ -23,11 +48,11 @@
     
     
     <entry>
-      <title>这是第三篇博客</title>
-      <link href="/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%89%E7%AF%87%E5%8D%9A%E5%AE%A2/"/>
-      <url>/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%89%E7%AF%87%E5%8D%9A%E5%AE%A2/</url>
+      <title>这是第七篇博客</title>
+      <link href="/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%83%E7%AF%87%E5%8D%9A%E5%AE%A2/"/>
+      <url>/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%83%E7%AF%87%E5%8D%9A%E5%AE%A2/</url>
       
-        <content type="html"><![CDATA[<p>我的第三篇博客</p>]]></content>
+        <content type="html"><![CDATA[<p>我的第七篇博客</p>]]></content>
       
       
       <categories>
@@ -39,7 +64,7 @@
       
         <tags>
             
-            <tag> 标签3 </tag>
+            <tag> 标签2 </tag>
             
         </tags>
       
@@ -73,11 +98,11 @@
     
     
     <entry>
-      <title>这是第七篇博客</title>
-      <link href="/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%83%E7%AF%87%E5%8D%9A%E5%AE%A2/"/>
-      <url>/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%83%E7%AF%87%E5%8D%9A%E5%AE%A2/</url>
+      <title>这是第三篇博客</title>
+      <link href="/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%89%E7%AF%87%E5%8D%9A%E5%AE%A2/"/>
+      <url>/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%89%E7%AF%87%E5%8D%9A%E5%AE%A2/</url>
       
-        <content type="html"><![CDATA[<p>我的第七篇博客</p>]]></content>
+        <content type="html"><![CDATA[<p>我的第三篇博客</p>]]></content>
       
       
       <categories>
@@ -89,7 +114,7 @@
       
         <tags>
             
-            <tag> 标签2 </tag>
+            <tag> 标签3 </tag>
             
         </tags>
       
@@ -123,31 +148,6 @@
     
     
     <entry>
-      <title>这是第四篇博客</title>
-      <link href="/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E5%9B%9B%E7%AF%87%E5%8D%9A%E5%AE%A2/"/>
-      <url>/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E5%9B%9B%E7%AF%87%E5%8D%9A%E5%AE%A2/</url>
-      
-        <content type="html"><![CDATA[<p>我的第四篇博客</p>]]></content>
-      
-      
-      <categories>
-          
-          <category> Linux </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> 标签4 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>你好，这是第六篇博客</title>
       <link href="/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E5%85%AD%E7%AF%87%E5%8D%9A%E5%AE%A2/"/>
       <url>/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E5%85%AD%E7%AF%87%E5%8D%9A%E5%AE%A2/</url>
@@ -165,6 +165,31 @@
         <tags>
             
             <tag> 标签6 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>这是第四篇博客</title>
+      <link href="/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E5%9B%9B%E7%AF%87%E5%8D%9A%E5%AE%A2/"/>
+      <url>/2022/11/20/%E6%88%91%E7%9A%84%E7%AC%AC%E5%9B%9B%E7%AF%87%E5%8D%9A%E5%AE%A2/</url>
+      
+        <content type="html"><![CDATA[<p>我的第四篇博客</p>]]></content>
+      
+      
+      <categories>
+          
+          <category> Linux </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 标签4 </tag>
             
         </tags>
       
